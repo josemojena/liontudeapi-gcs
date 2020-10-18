@@ -1,7 +1,7 @@
 const GOOGLE_CLOUD_PROJECT = process.env['GOOGLE_CLOUD_PROJECT'];
 const CLOUD_BUCKET = process.env['GOOGLE_BUCKET_NAME'];
 const { Storage } = require('@google-cloud/storage');
-const { Duplex } = require('stream');
+
 const storage = new Storage({ keyFilename: GOOGLE_CLOUD_PROJECT, projectId: 'lioscrapstorage' });
 const bucket = storage.bucket(CLOUD_BUCKET);
 
@@ -9,99 +9,43 @@ function getPublicUrl(filename) {
   return `https://storage.googleapis.com/${CLOUD_BUCKET}/${filename}`;
 }
 
-const fs = require('fs');
-const path = require('path');
-
-
-function getStream() {
-  return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream("file.csv");
-    const duplex = new Duplex();
-    duplex.push(Buffer.from(req.file.buffer));
-    duplex.push(null);
-    duplex.pipe(file);
-    duplex.on('error', (e) => reject(e));
-    duplex.on('end', () => resolve(file));
-  })
-
-}
-
-function createTextFile() {
-
-  return bucket.upload(path.resolve('package.json'));
-  /* const file = bucket.file('my-file.txt', { generation: 0 });
-   const contents = 'This is the contents of the file.';
-   return new Promise((resolve, reject) => {
- 
-     file.save(contents, function (err) {
-       if (err) {
-         file.deleteResumableCache();
-         reject(err);
-       }
-       else resolve("ok");
-     });
-   })*/
-}
-
-
-function sendLocalFile() {
-
-  const file = bucket.file("package.json");
-  return new Promise((resolve, reject) => {
-    fs.createReadStream(path.resolve('package.json'))
-      .pipe(file.createWriteStream())
-      .on('error', function (err) { console.log(err); reject(err) })
-      .on('finish', function () {
-        // The file upload is complete.
-        console.log('finished');
-        resolve("all is fine");
-      });
-  })
-}
-
-function save(req) {
-  const gcsname = req.file.originalname;
+function sendUploadToGCS(tempfile){
+  //https://github.com/GoogleCloudPlatform/nodejs-getting-started/
+  const gcsname = tempfile.originalname;
   const file = bucket.file(gcsname);
-  const stream = file.createWriteStream({
-    metadata: { contentType: req.file.mimetype },
-    resumable: false,
-  });
-  const duplex = new Duplex();
-  duplex.push(Buffer.from(req.file.buffer));
-  duplex.push(null);
-  duplex.pipe(stream);
-  duplex.on('error', (e) => console.log(e));
-  duplex.on('end', () => console.log('everything ok'));
-}
 
-function sendUploadToGCS(req, res, next) {
-
-  if (!req.file) {
-    return next();
-  }
-  const gcsname = req.file.originalname;
-  const file = bucket.file(gcsname);
   const stream = file.createWriteStream({
     metadata: {
-      contentType: req.file.mimetype,
+      contentType: tempfile.mimetype,
     },
     resumable: false,
   });
 
-  stream.on('error', (err) => {
-    req.file.cloudStorageError = err;
-    console.log(err);
-    next(err);
+  stream.on('error', err  => {
+    return new Error(err);
   });
 
   stream.on('finish', async () => {
-    next();
+    return getPublicUrl(gcsname);
   });
 
-  stream.end(req.file.buffer);
+  stream.end(tempfile.buffer);
+}
 
 
+/**
+ * Download a file using gcs api
+ * @param fileName name of the file
+ */
+async function downloadFile(fileName){
+  const file = bucket.file(fileName);
 
+  const fileInfo = await file.get();
+  const contents = await file.download();
+  return {
+    content: contents[0],
+    contentType: fileInfo[0].metadata.contentType
+  }
 }
 // [END process]
 
@@ -122,8 +66,5 @@ const multer = Multer({
 module.exports = {
   multer,
   sendUploadToGCS,
-  save,
-  sendLocalFile,
-  createTextFile,
-  getStream
+  downloadFile
 }
