@@ -1,0 +1,13 @@
+runtime: nodejs
+env: flex
+manual_scaling:
+  instances: 1
+resources:
+  cpu: .5
+  memory_gb: 0.5
+  disk_size_gb: 10
+env_variables:
+  GOOGLE_APPLICATION_CREDENTIALS: "lioscrapStorage-d13b699d6872.json"
+  GOOGLE_BUCKET_NAME: "lioscrap_files"
+  ALLOWED_EXTENSIONS: ".csv"
+  NODE_ENV: "development"
