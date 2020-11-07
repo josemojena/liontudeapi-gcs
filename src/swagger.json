@@ -1,0 +1,114 @@
+{
+    "info": {
+        "title": "Lionscrap file storage API",
+        "version": "1.0.0",
+        "description": ""
+    },
+    "basePath": "/v1",
+    "swagger": "2.0",
+    "definitions": {
+        "ApiResponse": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean",
+                    "description": "True if all files were uploaded ok or False otherwise"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Name of each file"
+                    },
+                    "description": "All files could not been uploaded"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "description": "Name of each file"
+                    },
+                    "description": "All files uploaded ok"
+                }
+            }
+        }
+    },
+    "responses": {},
+    "parameters": {},
+    "securityDefinitions": {
+        "api_key": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "x-security-token"
+        }
+    },
+    "security": [{
+        "api_key":[]
+    }],
+    "paths": {
+        "/download/{file}": {
+            "get": {
+                "summary": "Download a file given its name",
+                "description": "Return the stream file content",
+                "operationId": "downloadFile",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "parameters": [
+                    {
+                        "name": "file",
+                        "in": "path",
+                        "description": "Name of the file",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A CSV file as stram of data",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Error with the message description"
+                    },
+                    "403": {
+                        "description": "Forbidden for unauthorized requests"
+                    }
+                }
+            }
+        },
+        "/upload": {
+            "post": {
+                "summary": "Upload a file to the storage",
+                "description": "",
+                "operationId": "updatePetWithForm",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "parameters": [
+                    {
+                        "in": "formData",
+                        "type": "file",
+                        "description": "A file or a list of files to be uploaded"
+                    }
+                ],
+                "responses": {
+                    "500": {
+                        "description": "Error with the message description"
+                    },
+                    "200": {
+                        "description": "successful operation",
+                        "schema": {
+                            "$ref": "#/definitions/ApiResponse"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

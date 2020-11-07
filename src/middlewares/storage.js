@@ -1,15 +1,18 @@
+
 const GOOGLE_CLOUD_PROJECT = process.env['GOOGLE_CLOUD_PROJECT'];
 const CLOUD_BUCKET = process.env['GOOGLE_BUCKET_NAME'];
+const GOOGLE_PROJECT_ID = process.env['GOOGLE_PROJECT_ID'];
+
 const { Storage } = require('@google-cloud/storage');
 
-const storage = new Storage({ keyFilename: GOOGLE_CLOUD_PROJECT, projectId: 'lioscrapstorage' });
+const storage = new Storage({ keyFilename: GOOGLE_CLOUD_PROJECT, projectId: GOOGLE_PROJECT_ID });
 const bucket = storage.bucket(CLOUD_BUCKET);
 
 function getPublicUrl(filename) {
   return `https://storage.googleapis.com/${CLOUD_BUCKET}/${filename}`;
 }
 
-function sendUploadToGCS(tempfile){
+function sendUploadToGCS(tempfile) {
   //https://github.com/GoogleCloudPlatform/nodejs-getting-started/
   const gcsname = tempfile.originalname;
   const file = bucket.file(gcsname);
@@ -21,7 +24,7 @@ function sendUploadToGCS(tempfile){
     resumable: false,
   });
 
-  stream.on('error', err  => {
+  stream.on('error', err => {
     return new Error(err);
   });
 
@@ -37,7 +40,7 @@ function sendUploadToGCS(tempfile){
  * Download a file using gcs api
  * @param fileName name of the file
  */
-async function downloadFile(fileName){
+async function downloadFile(fileName) {
   const file = bucket.file(fileName);
 
   const fileInfo = await file.get();

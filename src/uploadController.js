@@ -44,6 +44,7 @@ const uploadFile = (req, res) => {
  */
 const downloadFile = async (req, res) => {
     const name = req.params.file;
+    
     try {
         const result = await storage.downloadFile(name);
         res.header('Content-type', result.contentType);

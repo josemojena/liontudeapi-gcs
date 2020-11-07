@@ -2,21 +2,24 @@ require('dotenv').config();
 
 const express = require('express');
 const bodyParser = require('body-parser');
+
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./swagger.json');
 const storage = require('./middlewares/storage');
-const cors = require('cors');
-const uploadController =  require('./uploadController');
+const header = require('./middlewares/header');
+const uploadController = require('./uploadController');
+
 const app = express();
+const cors = require('cors');
+
 app.use(cors());
 app.use(bodyParser.json());
+app.use('/v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use(function (err, req, res, next) {
-   res.setHeader('Content-Type', 'application/json');
-   res.status(500);
-   res.json(JSON.stringify(err));
-})
+//@TODO find a way of use a common prefix for all routes
+app.get('/v1/download/:file', header.applySecurity, header.applyErrorHandler, uploadController.downloadFile);
+app.post('/v1/upload', header.applySecurity, header.applyErrorHandler, storage.multer.any(), uploadController.uploadFile);
 
-app.post('/upload', storage.multer.any(), uploadController.uploadFile)
-app.get('/download/:file', uploadController.downloadFile)
 //Run the app
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
