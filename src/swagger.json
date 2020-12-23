@@ -83,7 +83,7 @@
             "post": {
                 "summary": "Upload a file to the storage",
                 "description": "",
-                "operationId": "updatePetWithForm",
+                "operationId": "uploadFileWithForm",
                 "consumes": [
                     "multipart/form-data"
                 ],
