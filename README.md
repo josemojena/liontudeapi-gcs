@@ -1,7 +1,7 @@
 # Api for upload files to google cloud storage
 
 
-### Small API for upload and download file to google cloud storage, the main purpose of this project is to avoid developers to interact directly with gcs using only the API for managing files. The doc can be consulted once you run the app by accessing this URL.
+### Small API for upload and download file to google cloud storage, the api works as intermediate layer between a client and google cloud storage.
 
 `http(s)://{yourserver}/v1/api-docs`
 
